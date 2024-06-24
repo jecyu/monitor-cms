@@ -1,13 +1,20 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import "rrweb-player/dist/style.css";
 import rrwebPlayer from "rrweb-player";
 
 function App() {
   const rePlayerRef = useRef();
-  const handleFetch = async () => {
+  const [errors, setErrors] = useState([]);
+  const handleFetchEvents = async () => {
     const response = await fetch("/events");
     const data = await response.json();
     handleSetEvents(data);
+  };
+
+  const handleFetchEventsErrors = async () => {
+    const response = await fetch("/errors");
+    const data = await response.json();
+    setErrors(data);
   };
 
   const handleSetEvents = (events) => {
@@ -30,15 +37,24 @@ function App() {
         item.remove();
       });
     }
+    if (errors.length > 0) {
+      setErrors([]);
+    }
   };
 
   console.log(" rePlayerRef.current ->", rePlayerRef.current);
-
+  const handleFetch = () => {
+    handleFetchEvents();
+    handleFetchEventsErrors();
+  };
   return (
     <div>
       <h1>User Behavior and Error Stack</h1>
-      <button onClick={handleFetch}>Fetch Events</button>
-      <button onClick={handleDestroy}>Destroy</button>
+      <div>
+        <button onClick={handleFetch}>读取用户行为和错误信息（如有）</button>
+        <button onClick={handleDestroy}>清除播放器和错误信息</button>
+      </div>
+      {errors.length > 0 && <code>{JSON.stringify(errors, null, 2)}</code>}
     </div>
   );
 }
